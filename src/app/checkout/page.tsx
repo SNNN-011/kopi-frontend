@@ -63,7 +63,7 @@ export default function CheckoutPage() {
       }
 
       // Fase 2: Eksekusi Injeksi Order Baru ke Database
-      const orderRes = await fetch('http://localhost:5000/api/orders', {
+      const orderRes = await fetch('https://kopi-backend-production.up.railway.app/api/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       const generatedOrderId = orderData.order._id
 
       // Fase 3: Simulasi Pembayaran berdasarkan Order ID yang telah tervalidasi
-      const paymentRes = await fetch('http://localhost:5000/api/payment/simulate', {
+      const paymentRes = await fetch('https://kopi-backend-production.up.railway.app/api/payment/simulate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
