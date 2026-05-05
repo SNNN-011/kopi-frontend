@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation' // Tambahkan useRouter
 
 interface Product {
   _id?: string
@@ -32,8 +32,8 @@ const KategoriColor: Record<string, string> = {
 }
 
 export default function AdminProductDashboard() {
-  // ✅ PINDAH KE SINI: Hook harus berada di dalam tubuh fungsi komponen
-  const pathname = usePathname() 
+  const pathname = usePathname()
+  const router = useRouter()
 
   const [products, setProducts]   = useState<Product[]>([])
   const [loading, setLoading]     = useState(true)
@@ -44,6 +44,7 @@ export default function AdminProductDashboard() {
   const [deleting, setDeleting]   = useState<string | null>(null)
   const [formData, setFormData]   = useState<Product>(EMPTY)
   const [formOpen, setFormOpen]   = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false) // State untuk Sidebar Mobile
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type })
@@ -55,14 +56,22 @@ export default function AdminProductDashboard() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
       if (!res.ok) throw new Error('Gagal mengambil data')
       setProducts(await res.json())
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Terjadi kesalahan sistem')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchProducts() }, [])
+  // Intersepsi Keamanan: Cek token saat mounting
+  useEffect(() => {
+    const token = localStorage.getItem('kopi-token')
+    if (!token) {
+      router.push('/login') // Tendang ke halaman login jika tidak ada token
+    } else {
+      fetchProducts()
+    }
+  }, [router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -75,7 +84,8 @@ export default function AdminProductDashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = localStorage.getItem('kopi-token')
-    if (!token) { showToast('Login admin dulu!', 'err'); return }
+    if (!token) { showToast('Akses ditolak, silakan login kembali.', 'err'); return }
+    
     setSaving(true)
     const isEdit = !!formData._id
     try {
@@ -87,20 +97,20 @@ export default function AdminProductDashboard() {
           body: JSON.stringify(formData)
         }
       )
-      if (!res.ok) throw new Error('Gagal menyimpan')
-      showToast(isEdit ? '✓ Produk diupdate' : '✓ Produk ditambahkan')
+      if (!res.ok) throw new Error('Gagal menyimpan perubahan ke server')
+      showToast(isEdit ? '✓ Produk berhasil diperbarui' : '✓ Produk ditambahkan')
       setFormData(EMPTY)
       setFormOpen(false)
       fetchProducts()
-    } catch (e: any) {
-      showToast(e.message, 'err')
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Error sistem', 'err')
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Hapus produk ini?')) return
+    if (!confirm('Hapus produk ini secara permanen?')) return
     const token = localStorage.getItem('kopi-token')
     setDeleting(id)
     try {
@@ -108,11 +118,11 @@ export default function AdminProductDashboard() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      if (!res.ok) throw new Error('Gagal menghapus')
+      if (!res.ok) throw new Error('Gagal menghapus produk')
       showToast('✓ Produk dihapus')
       fetchProducts()
-    } catch (e: any) {
-      showToast(e.message, 'err')
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Error sistem', 'err')
     } finally {
       setDeleting(null)
     }
@@ -149,7 +159,18 @@ export default function AdminProductDashboard() {
         </div>
       )}
 
-      <aside className="fixed left-0 top-16 bottom-0 w-56 bg-[#141210] border-r border-stone-800/60 px-4 py-6 z-30">
+      {/* Overlay Hitam untuk Mobile Sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Diubah menjadi adaptif */}
+      <aside className={`fixed left-0 top-16 bottom-0 w-56 bg-[#141210] border-r border-stone-800/60 px-4 py-6 z-40
+        transform transition-transform duration-300 ease-in-out lg:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="mb-8">
           <p className="text-[10px] text-stone-600 uppercase tracking-widest mb-1">Panel</p>
           <p className="text-amber-400 font-semibold text-sm">☕ Admin Kopi</p>
@@ -163,6 +184,7 @@ export default function AdminProductDashboard() {
             <Link 
               key={item.label} 
               href={item.href}
+              onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                 ${pathname === item.href
                   ? 'bg-amber-900/40 text-amber-300 font-medium'
@@ -188,21 +210,35 @@ export default function AdminProductDashboard() {
         </div>
       </aside>
 
-      <main className="ml-56 px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-stone-100 tracking-tight">Manajemen Produk</h1>
-            <p className="text-stone-500 text-sm mt-1">Kelola seluruh produk kopi Anda</p>
+      {/* Main Content - Margin diadaptasikan untuk Desktop (lg:ml-56) */}
+      <main className="lg:ml-56 px-4 md:px-8 py-6 md:py-8 transition-all w-full lg:w-[calc(100%-14rem)]">
+        
+        {/* Header dengan Tombol Menu Hamburger untuk Mobile */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 bg-stone-900 border border-stone-800 rounded-lg text-stone-300"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-stone-100 tracking-tight">Manajemen Produk</h1>
+              <p className="text-stone-500 text-xs md:text-sm mt-1">Kelola seluruh produk kopi Anda</p>
+            </div>
           </div>
           <button
             onClick={() => { setFormData(EMPTY); setFormOpen(true) }}
-            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-stone-950
-              font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
+            className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-stone-950
+              font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors w-full sm:w-auto">
             <span className="text-lg leading-none">+</span> Tambah Produk
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        {/* Dashboard Cards - Responsif 1 kolom (Mobile) -> 3 Kolom (Desktop) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[
             { label: 'Total SKU', value: products.length, sub: 'jenis produk', color: 'text-amber-400' },
             { label: 'Total Stok', value: totalStok.toLocaleString('id-ID'), sub: 'unit tersedia', color: 'text-emerald-400' },
@@ -217,7 +253,7 @@ export default function AdminProductDashboard() {
         </div>
 
         {formOpen && (
-          <div className="bg-[#141210] border border-amber-900/40 rounded-2xl p-6 mb-8 relative">
+          <div className="bg-[#141210] border border-amber-900/40 rounded-2xl p-4 md:p-6 mb-8 relative">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-semibold text-amber-300 text-base">
                 {formData._id ? '✏️  Edit Produk' : '➕  Tambah Produk Baru'}
@@ -225,8 +261,9 @@ export default function AdminProductDashboard() {
               <button onClick={cancelEdit} className="text-stone-500 hover:text-stone-300 text-xl leading-none">✕</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+            {/* Form Input - Susunan Grid diadaptasi */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
                 <label className="text-xs text-stone-400 uppercase tracking-wider mb-1.5 block">Nama Produk</label>
                 <input type="text" name="nama" value={formData.nama} onChange={handleChange} required
                   placeholder="Contoh: Mandheling Premium"
@@ -235,7 +272,7 @@ export default function AdminProductDashboard() {
                     focus:border-amber-600 transition-colors" />
               </div>
 
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <label className="text-xs text-stone-400 uppercase tracking-wider mb-1.5 block">Deskripsi</label>
                 <textarea name="deskripsi" value={formData.deskripsi} onChange={handleChange} required rows={2}
                   placeholder="Rasa, aroma, cara seduh..."
@@ -277,7 +314,7 @@ export default function AdminProductDashboard() {
                     focus:border-amber-600 transition-colors" />
               </div>
 
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <label className="text-xs text-stone-400 uppercase tracking-wider mb-1.5 block">URL Gambar</label>
                 <input type="text" name="gambar" value={formData.gambar} onChange={handleChange}
                   placeholder="https://..."
@@ -287,14 +324,14 @@ export default function AdminProductDashboard() {
               </div>
 
               {formData.gambar && (
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <p className="text-xs text-stone-500 mb-2">Preview:</p>
                   <img src={formData.gambar} alt="preview"
                     className="h-20 w-20 object-cover rounded-lg border border-stone-700" />
                 </div>
               )}
 
-              <div className="col-span-2 flex gap-3 pt-2">
+              <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
                 <button type="submit" disabled={saving}
                   className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-50
                     text-stone-950 font-semibold py-2.5 rounded-xl text-sm transition-colors">
@@ -302,7 +339,7 @@ export default function AdminProductDashboard() {
                 </button>
                 <button type="button" onClick={cancelEdit}
                   className="px-6 bg-stone-800 hover:bg-stone-700 text-stone-300
-                    font-medium py-2.5 rounded-xl text-sm transition-colors">
+                    font-medium py-2.5 rounded-xl text-sm transition-colors w-full sm:w-auto">
                   Batal
                 </button>
               </div>
@@ -310,8 +347,8 @@ export default function AdminProductDashboard() {
           </div>
         )}
 
-        <div className="flex items-center gap-4 mb-5">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5 w-full">
+          <div className="relative w-full sm:flex-1 sm:max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500"
               fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -323,7 +360,7 @@ export default function AdminProductDashboard() {
                 text-stone-300 text-sm placeholder-stone-600 focus:outline-none
                 focus:border-amber-700 transition-colors" />
           </div>
-          <p className="text-stone-500 text-sm">{filtered.length} produk</p>
+          <p className="text-stone-500 text-sm hidden sm:block">{filtered.length} produk</p>
         </div>
 
         {loading ? (
@@ -338,8 +375,9 @@ export default function AdminProductDashboard() {
             <button onClick={fetchProducts} className="mt-4 text-xs text-red-400 underline">Coba lagi</button>
           </div>
         ) : (
-          <div className="bg-[#141210] border border-stone-800/60 rounded-2xl overflow-hidden">
-            <table className="w-full">
+          /* Pembungkus Tabel: overflow-x-auto untuk responsivitas tabel */
+          <div className="bg-[#141210] border border-stone-800/60 rounded-2xl overflow-x-auto w-full">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-stone-800">
                   <th className="text-left px-5 py-3.5 text-xs text-stone-500 uppercase tracking-wider font-medium">Produk</th>
@@ -368,13 +406,13 @@ export default function AdminProductDashboard() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`text-[11px] px-2.5 py-1 rounded-full border capitalize font-medium
+                      <span className={`text-[11px] px-2.5 py-1 rounded-full border capitalize font-medium whitespace-nowrap
                         ${KategoriColor[p.kategori] || KategoriColor.lainnya}`}>
                         {p.kategori}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <p className="text-amber-400 text-sm font-medium">{rupiah(p.harga)}</p>
+                      <p className="text-amber-400 text-sm font-medium whitespace-nowrap">{rupiah(p.harga)}</p>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
