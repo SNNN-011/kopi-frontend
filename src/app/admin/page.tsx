@@ -80,7 +80,7 @@ export default function AdminProductDashboard() {
     const isEdit = !!formData._id
     try {
       const res = await fetch(
-        isEdit ? `http://localhost:5000/api/products/${formData._id}` : 'http://localhost:5000/api/products',
+        isEdit ? `https://kopi-backend-production.up.railway.app/api/products/${formData._id}` : 'https://kopi-backend-production.up.railway.app/api/products',
         {
           method: isEdit ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
