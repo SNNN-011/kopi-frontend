@@ -88,10 +88,16 @@ export default function CheckoutPage() {
     if (!token) return
     try {
       const orderPayload = {
-        alamat: `${formData.alamatLengkap}, ${formData.kota}, ${formData.kodePos} (Telp: ${formData.telepon})`,
-        metodePembayaran: metodeBayar,
-        items: items.map((item) => ({ produkId: item.id, jumlah: item.jumlah })),
-      }
+  alamat: {
+    nama:    formData.nama,
+    jalan:   formData.alamatLengkap,
+    kota:    formData.kota,
+    kodePos: formData.kodePos,
+    telepon: formData.telepon,
+  },
+  metodePembayaran: metodeBayar,
+  items: items.map((item) => ({ produkId: item.id, jumlah: item.jumlah })),
+}
       const orderRes = await fetch('https://kopi-backend-production.up.railway.app/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
