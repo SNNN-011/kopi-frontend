@@ -1,3 +1,4 @@
+//src/app/login/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -35,7 +36,7 @@ export default function AuthPage() {
       : formData
 
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`https://kopi-backend-production.up.railway.app${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
