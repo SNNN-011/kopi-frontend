@@ -17,7 +17,7 @@ const lato = Lato({
 })
 
 export const metadata: Metadata = {
-  title: 'Kopi Nusantara — Premium Ground Coffee',
+  title: 'Pure Coffee — Premium Ground Coffee',
   description: 'Kopi bubuk pilihan terbaik dari seluruh Nusantara',
 }
 

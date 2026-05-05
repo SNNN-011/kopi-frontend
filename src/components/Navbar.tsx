@@ -60,7 +60,7 @@ export default function Navbar() {
           <span className="text-2xl">☕</span>
           <div>
             <p className="font-bold text-amber-900 leading-tight text-base tracking-tight">
-              Kopi Nusantara
+              Pure Coffee
             </p>
             <p className="text-[10px] text-amber-600 tracking-widest uppercase leading-none">
               Premium Ground Coffee

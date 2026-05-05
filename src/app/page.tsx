@@ -1,4 +1,4 @@
-// app/page.tsx — Homepage Toko Kopi Nusantara
+// app/page.tsx — Homepage Toko Pure Coffee
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -280,7 +280,7 @@ export default function HomePage() {
       {/* ── FOOTER ── */}
       <footer className="bg-stone-900 text-stone-500 text-center py-8 text-sm">
         <p style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-amber-400 font-semibold mb-1">☕ Kopi Nusantara</p>
+          className="text-amber-400 font-semibold mb-1">☕ Pure Coffee</p>
         <p>© {new Date().getFullYear()} — Premium Ground Coffee dari Seluruh Indonesia</p>
       </footer>
     </div>
