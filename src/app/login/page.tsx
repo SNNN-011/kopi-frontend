@@ -40,8 +40,10 @@ export default function AuthPage() {
 
       if (isLoginMode) {
         localStorage.setItem('kopi-token', data.token)
+        document.cookie = `kopi-token=${data.token}; path=/; max-age=604800`
         localStorage.setItem('kopi-user', JSON.stringify(data.user))
-        router.push('/checkout')
+        const callbackUrl = new URLSearchParams(window.location.search).get('from') || '/products'
+router.push(callbackUrl)
       } else {
         alert('Registrasi berhasil. Silakan masuk dengan akun Anda.')
         setIsLoginMode(true)
