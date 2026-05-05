@@ -26,7 +26,7 @@ export default function AdminUserDashboard() {
 
     // UBAH BARIS DI BAWAH INI:
     // Tambahkan /auth di dalam URL-nya
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, { 
+    const res = await fetch('https://kopi-backend-production.up.railway.app/api/auth/users', { 
       headers: { 'Authorization': `Bearer ${token}` }
     })
     

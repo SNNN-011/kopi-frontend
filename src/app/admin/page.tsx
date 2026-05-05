@@ -52,7 +52,7 @@ export default function AdminProductDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
+      const res = await fetch('https://kopi-backend-production.up.railway.app/api/products')
       if (!res.ok) throw new Error('Gagal mengambil data')
       setProducts(await res.json())
     } catch (e: any) {
@@ -80,7 +80,7 @@ export default function AdminProductDashboard() {
     const isEdit = !!formData._id
     try {
       const res = await fetch(
-        isEdit ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/${formData._id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
+        isEdit ? `https://kopi-backend-production.up.railway.app/api/products/${formData._id}` : 'https://kopi-backend-production.up.railway.app/api/products',
         {
           method: isEdit ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -104,7 +104,7 @@ export default function AdminProductDashboard() {
     const token = localStorage.getItem('kopi-token')
     setDeleting(id)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
+      const res = await fetch(`https://kopi-backend-production.up.railway.app/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
