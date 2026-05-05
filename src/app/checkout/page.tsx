@@ -45,6 +45,13 @@ export default function CheckoutPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Cek jumlah item tidak gila
+      for (const item of items) {
+        if (item.jumlah < 1 || item.jumlah > 100) {
+          setError('Jumlah item tidak valid (max 100)')
+          return
+        }
+      }
     setIsProcessing(true)
     setError(null)
 
@@ -141,7 +148,17 @@ export default function CheckoutPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-1">Nomor Kontak Operasional</label>
-                <input required type="tel" name="telepon" onChange={handleInputChange} className="w-full p-3 border border-stone-300 rounded focus:ring-2 focus:ring-amber-500 outline-none transition-shadow" />
+                <input
+                    required
+                    type="tel"
+                    name="telepon"
+                    maxLength={13}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '')
+                      setFormData({ ...formData, telepon: val })
+                    }}
+                    className="w-full p-3 border border-stone-300 rounded focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
               </div>
 
               <h2 className="text-xl font-bold text-stone-800 mt-8 mb-4 border-b pb-2">Konfigurasi Gateway Pembayaran</h2>
