@@ -52,7 +52,7 @@ export default function AdminProductDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/products')
+      const res = await fetch('https://kopi-backend-production.up.railway.app/api/products')
       if (!res.ok) throw new Error('Gagal mengambil data')
       setProducts(await res.json())
     } catch (e: any) {
