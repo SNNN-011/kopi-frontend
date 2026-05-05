@@ -38,7 +38,7 @@ export default function CatalogPage() {
   const { tambah }              = useCart()
 
   useEffect(() => {
-    fetch('https://kopi-backend-production.up.railway.app/api/products')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
       .then((r) => r.json())
       .then((data) => { setSemua(data); setLoading(false) })
       .catch(() => setLoading(false))

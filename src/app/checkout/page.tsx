@@ -98,7 +98,7 @@ export default function CheckoutPage() {
   metodePembayaran: metodeBayar,
   items: items.map((item) => ({ produkId: item.id, jumlah: item.jumlah })),
 }
-      const orderRes = await fetch('https://kopi-backend-production.up.railway.app/api/orders', {
+      const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(orderPayload),
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
       const orderData = await orderRes.json()
       if (!orderRes.ok) throw new Error(orderData.message || 'Gagal membuat pesanan.')
 
-      const paymentRes = await fetch('https://kopi-backend-production.up.railway.app/api/payment/simulate', {
+      const paymentRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ orderId: orderData.order._id }),

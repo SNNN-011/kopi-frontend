@@ -27,7 +27,7 @@ export default function HomePage() {
   const [ditambah, setDitambah] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('https://kopi-backend-production.up.railway.app/api/products')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
       .then((r) => r.json())
       .then((data) => {
         setProdukUnggulan(Array.isArray(data) ? data.slice(0, 3) : [])

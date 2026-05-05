@@ -28,7 +28,7 @@ export default function AuthPage() {
 
     try {
       const response = await fetch(
-        `https://kopi-backend-production.up.railway.app${endpoint}`,
+        `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
