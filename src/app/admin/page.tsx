@@ -104,7 +104,7 @@ export default function AdminProductDashboard() {
     const token = localStorage.getItem('kopi-token')
     setDeleting(id)
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`https://kopi-backend-production.up.railway.app/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
