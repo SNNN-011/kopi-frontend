@@ -73,7 +73,7 @@ export default function AdminOrderDashboard() {
       const token = localStorage.getItem('kopi-token')
       if (!token) throw new Error('Akses ditolak: Tidak ada token admin')
 
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const res = await fetch('https://kopi-backend-production.up.railway.app/api/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) {
@@ -94,7 +94,7 @@ export default function AdminOrderDashboard() {
     setUpdating(id)
     try {
       const token = localStorage.getItem('kopi-token')
-      const res = await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+      const res = await fetch(`https://kopi-backend-production.up.railway.app/api/orders/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
