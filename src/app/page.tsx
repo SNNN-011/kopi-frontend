@@ -113,7 +113,7 @@ export default function HomePage() {
 
       {/* ── KATEGORI STRIP ── */}
       <section className="bg-amber-800 py-5 overflow-hidden">
-        <div className="flex gap-10 animate-scroll whitespace-nowrap">
+        <div className="flex gap-19 animate-pulse whitespace-nowrap">
           {['Arabika Aceh', 'Robusta Lampung', 'Toraja Sapan', 'Kintamani Bali',
             'Flores Bajawa', 'Papua Wamena', 'Arabika Aceh', 'Robusta Lampung',
             'Toraja Sapan', 'Kintamani Bali'].map((k, i) => (

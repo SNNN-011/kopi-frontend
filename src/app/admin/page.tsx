@@ -45,6 +45,7 @@ export default function AdminProductDashboard() {
   const [formData, setFormData]   = useState<Product>(EMPTY)
   const [formOpen, setFormOpen]   = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false) // State untuk Sidebar Mobile
+  const [fileGambar, setFileGambar] = useState<File | null>(null)
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type })
@@ -83,25 +84,45 @@ export default function AdminProductDashboard() {
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = localStorage.getItem('kopi-token')
     if (!token) { showToast('Akses ditolak, silakan login kembali.', 'err'); return }
     
     setSaving(true)
     const isEdit = !!formData._id
+    
+    // Siapkan form data untuk kirim file + teks
+    const submitData = new FormData()
+    submitData.append('nama', formData.nama)
+    submitData.append('deskripsi', formData.deskripsi)
+    submitData.append('harga', String(formData.harga))
+    submitData.append('stok', String(formData.stok))
+    submitData.append('kategori', formData.kategori)
+    submitData.append('berat', formData.berat)
+    
+    // Jika ada file gambar baru yang diupload, kirim filenya
+    if (fileGambar) {
+      submitData.append('gambar', fileGambar)
+    } else if (formData.gambar) {
+      // Jika tidak ada gambar baru, tapi sebelumnya ada gambar lama (saat edit)
+      submitData.append('gambar', formData.gambar)
+    }
+
     try {
       const res = await fetch(
         isEdit ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/${formData._id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
         {
           method: isEdit ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(formData)
+          // PERHATIAN: Content-Type JANGAN di-set manual, biar browser yang atur jadi multipart/form-data
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: submitData
         }
       )
       if (!res.ok) throw new Error('Gagal menyimpan perubahan ke server')
       showToast(isEdit ? '✓ Produk berhasil diperbarui' : '✓ Produk ditambahkan')
       setFormData(EMPTY)
+      setFileGambar(null) // Reset file gambar
       setFormOpen(false)
       fetchProducts()
     } catch (e) {
@@ -317,12 +338,18 @@ export default function AdminProductDashboard() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs text-stone-400 uppercase tracking-wider mb-1.5 block">URL Gambar</label>
-                <input type="text" name="gambar" value={formData.gambar} onChange={handleChange}
-                  placeholder="https://..."
+                <label className="text-xs text-stone-400 uppercase tracking-wider mb-1.5 block">Upload Gambar (Kosongkan jika tidak ingin ubah)</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setFileGambar(e.target.files[0])
+                    }
+                  }}
                   className="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2.5
-                    text-stone-200 text-sm placeholder-stone-600 focus:outline-none
-                    focus:border-amber-600 transition-colors" />
+                    text-stone-200 text-sm focus:outline-none focus:border-amber-600 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-900/40 file:text-amber-300 hover:file:bg-amber-900/60" 
+                />
               </div>
 
               {formData.gambar && (
