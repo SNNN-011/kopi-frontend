@@ -9,15 +9,15 @@ interface Product {
   _id?: string
   nama: string
   deskripsi: string
-  harga: number
-  stok: number
+  harga: number | ''
+  stok: number | ''
   kategori: string
   berat: string
   gambar: string
 }
 
 const EMPTY: Product = {
-  nama: '', deskripsi: '', harga: 0, stok: 0,
+  nama: '', deskripsi: '', harga: '', stok: '',
   kategori: 'arabika', berat: '', gambar: ''
 }
 
@@ -77,7 +77,9 @@ export default function AdminProductDashboard() {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'harga' || name === 'stok' ? Number(value) : value
+      [name]: (name === 'harga' || name === 'stok') 
+                ? (value === '' ? '' : Number(value)) 
+                : value
     }))
   }
 
@@ -141,9 +143,9 @@ export default function AdminProductDashboard() {
     p.kategori.toLowerCase().includes(search.toLowerCase())
   )
 
-  const totalStok   = products.reduce((s, p) => s + p.stok, 0)
-  const totalNilai  = products.reduce((s, p) => s + p.harga * p.stok, 0)
-  const stokRendah  = products.filter(p => p.stok <= 5).length
+  const totalStok   = products.reduce((s, p) => Number(p.stok), 0)
+  const totalNilai  = products.reduce((s, p) => s + Number(p.harga) * Number(p.stok), 0)
+  const stokRendah  = products.filter(p => Number(p.stok) <= 5).length
 
   return (
     <div className="min-h-screen bg-[#0E0C0A] text-stone-200 pt-16"
@@ -412,19 +414,19 @@ export default function AdminProductDashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <p className="text-amber-400 text-sm font-medium whitespace-nowrap">{rupiah(p.harga)}</p>
+                      <p className="text-amber-400 text-sm font-medium whitespace-nowrap">{rupiah(Number(p.harga))}</p>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-semibold
-                          ${p.stok === 0 ? 'text-red-400' : p.stok <= 5 ? 'text-orange-400' : 'text-stone-300'}`}>
+                          ${Number(p.stok) === 0 ? 'text-red-400' : Number(p.stok) <= 5 ? 'text-orange-400' : 'text-stone-300'}`}>
                           {p.stok}
                         </span>
-                        {p.stok === 0 && (
+                        {Number(p.stok) === 0 && (
                           <span className="text-[10px] bg-red-950/60 text-red-400 border border-red-900/50
                             px-1.5 py-0.5 rounded-full">Habis</span>
                         )}
-                        {p.stok > 0 && p.stok <= 5 && (
+                        {Number(p.stok) > 0 && Number(p.stok) <= 5 && (
                           <span className="text-[10px] bg-orange-950/60 text-orange-400 border border-orange-900/50
                             px-1.5 py-0.5 rounded-full">Kritis</span>
                         )}
