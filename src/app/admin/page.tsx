@@ -153,11 +153,12 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const handleEdit = (p: Product) => {
     setFormData(p)
+    setFileGambar(null)
     setFormOpen(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const cancelEdit = () => { setFormData(EMPTY); setFormOpen(false) }
+  const cancelEdit = () => { setFormData(EMPTY); setFileGambar(null); setFormOpen(false) }
 
   const filtered = products.filter(p =>
     p.nama.toLowerCase().includes(search.toLowerCase()) ||
