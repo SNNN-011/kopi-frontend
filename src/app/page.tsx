@@ -92,7 +92,7 @@ export default function HomePage() {
               { angka: '12+', label: 'Jenis Kopi' },
               { angka: '100%', label: 'Single Origin' },
               { angka: '5 Pulau', label: 'Sumber Biji' },
-              { angka: '2 Hari', label: 'Pengiriman' },
+              { angka: '3 Hari', label: 'Pengiriman' },
             ].map((s) => (
               <div key={s.label}
                 className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
